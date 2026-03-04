@@ -1,6 +1,8 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
+const isRenderHost = typeof window !== 'undefined' && window.location.hostname.endsWith('onrender.com');
+const API_BASE_URL = process.env.REACT_APP_API_URL
+  || (isRenderHost ? 'https://code-up-backend.onrender.com/api' : 'http://localhost:8080/api');
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -67,7 +69,9 @@ api.interceptors.response.use(
       }
       
       // Check if we're on a protected page that actually needs auth
-      const currentPath = window.location.pathname;
+      const currentPath = window.location.hash
+        ? window.location.hash.replace('#', '')
+        : window.location.pathname;
       const isOnAuthPage = currentPath === '/login' || currentPath === '/register';
       
       // For public endpoints like /problems, don't force redirect
