@@ -1,11 +1,17 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 function Navbar() {
   const { user, logout } = useAuth();
+  const location = useLocation();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
   const navLinkClass = 'text-slate-200 hover:text-cyan-200 hover:bg-slate-800/60 px-4 py-2 rounded-xl text-sm font-medium transition-all';
+
+  React.useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [location.pathname]);
 
   return (
     <nav className="sticky top-0 z-50 border-b border-cyan-200/10 bg-slate-950/70 backdrop-blur-xl">
@@ -35,6 +41,15 @@ function Navbar() {
           <div className="flex items-center gap-3">
             {user ? (
               <>
+                <button
+                  type="button"
+                  onClick={() => setIsMobileMenuOpen((open) => !open)}
+                  className="md:hidden btn-ghost text-sm px-3 py-2"
+                  aria-label="Toggle navigation menu"
+                  aria-expanded={isMobileMenuOpen}
+                >
+                  {isMobileMenuOpen ? 'Close' : 'Menu'}
+                </button>
                 <span className="hidden sm:block text-sm text-slate-200">
                   Welcome, <span className="text-cyan-200 font-semibold">{user.username}</span>
                 </span>
@@ -48,6 +63,15 @@ function Navbar() {
             )}
           </div>
         </div>
+
+        {user && isMobileMenuOpen && (
+          <div className="md:hidden pb-3 flex flex-col gap-1">
+            <Link to="/dashboard" className={navLinkClass}>Dashboard</Link>
+            <Link to="/problems" className={navLinkClass}>Problems</Link>
+            <Link to="/profile" className={navLinkClass}>Profile</Link>
+            {user.role === 'ADMIN' && <Link to="/admin" className={navLinkClass}>Admin</Link>}
+          </div>
+        )}
       </div>
     </nav>
   );

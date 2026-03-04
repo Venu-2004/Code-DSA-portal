@@ -2,6 +2,10 @@
 
 A comprehensive full-stack web application that helps students practice Data Structures & Algorithms (DSA) problems with AI-powered recommendations using Google Gemini API and code execution via Judge0 API.
 
+## 🌐 Live Demo
+
+- [CODE_UP](https://code-dsa-learn-portal.onrender.com/)
+
 ## 🚀 Features
 
 ### Core Features
