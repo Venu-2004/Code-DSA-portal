@@ -91,11 +91,11 @@ api.interceptors.response.use(
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         delete api.defaults.headers.common['Authorization'];
-        window.location.href = '/login';
+        window.location.href = '/';
         return Promise.reject(error);
       } else if (!token && !isOnAuthPage && !isPublicEndpoint) {
         console.error('[API] REDIRECTING TO LOGIN - no token on protected endpoint');
-        window.location.href = '/login';
+        window.location.href = '/';
         return Promise.reject(error);
       }
     }

@@ -151,7 +151,7 @@ export function AuthProvider({ children }) {
     setUser(null);
     // Use window.location for a clean state reset
     setTimeout(() => {
-      window.location.href = '/login';
+      window.location.href = '/';
     }, 100);
   };
 
