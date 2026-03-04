@@ -291,6 +291,49 @@ function AdminDashboard() {
     }
   };
 
+  const handleDeleteUser = async (targetUser) => {
+    if (!targetUser?.id) {
+      return;
+    }
+
+    if (targetUser.role === 'ADMIN') {
+      setError('Admin account cannot be deleted.');
+      return;
+    }
+
+    if (user?.id === targetUser.id) {
+      setError('You cannot delete your own account.');
+      return;
+    }
+
+    const confirmed = window.confirm(`Delete user "${targetUser.username}"? This action cannot be undone.`);
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      setUpdatingUser(true);
+      setError('');
+      setSuccessMessage('');
+
+      await api.delete(`/admin/users/${targetUser.id}`);
+
+      setUsers((prevUsers) => prevUsers.filter((existingUser) => existingUser.id !== targetUser.id));
+      if (editingUserId === targetUser.id) {
+        handleCancelUserEdit();
+      }
+      setSuccessMessage('User deleted successfully.');
+    } catch (err) {
+      const message = typeof err.response?.data === 'string'
+        ? err.response.data
+        : 'Failed to delete user';
+      setError(message);
+      console.error(err);
+    } finally {
+      setUpdatingUser(false);
+    }
+  };
+
   if (!user || user.role !== 'ADMIN') {
     return null;
   }
@@ -446,7 +489,14 @@ function AdminDashboard() {
                             </button>
                           </div>
                         ) : (
-                          <span className="text-xs text-gray-400">-</span>
+                          <button
+                            type="button"
+                            disabled={updatingUser || u.role === 'ADMIN' || user?.id === u.id}
+                            onClick={() => handleDeleteUser(u)}
+                            className="px-3 py-1 rounded bg-red-100 text-red-700 hover:bg-red-200 disabled:opacity-50"
+                          >
+                            Delete
+                          </button>
                         )}
                       </td>
                     </tr>

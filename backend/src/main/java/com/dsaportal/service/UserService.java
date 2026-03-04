@@ -123,4 +123,16 @@ public class UserService {
         return userRepository.findById(user.getId())
                 .orElseThrow(() -> new RuntimeException("User not found after update"));
     }
+
+    @Transactional
+    public void deleteUserByAdmin(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (user.getRole() == User.Role.ADMIN) {
+            throw new RuntimeException("Admin account cannot be deleted");
+        }
+
+        userRepository.delete(user);
+    }
 }
