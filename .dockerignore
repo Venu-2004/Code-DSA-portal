@@ -1,0 +1,10 @@
+**/.git
+**/.gitignore
+**/.vscode
+**/node_modules
+**/target
+**/dist
+**/build
+**/*.log
+**/.env
+
