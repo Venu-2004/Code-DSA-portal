@@ -7,6 +7,7 @@ import com.dsaportal.repository.ProblemRepository;
 import com.dsaportal.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -29,8 +30,16 @@ public class DataInitializer implements CommandLineRunner {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Value("${app.seed.enabled:true}")
+    private boolean seedEnabled;
+
     @Override
     public void run(String... args) throws Exception {
+        if (!seedEnabled) {
+            System.out.println("Data seeding is disabled (app.seed.enabled=false)");
+            return;
+        }
+
         // Ensure admin user exists (idempotent for reused volumes)
         User admin = userRepository.findByEmail("admin@dsaportal.com").orElseGet(User::new);
         if (admin.getId() == null) {
@@ -42,7 +51,7 @@ public class DataInitializer implements CommandLineRunner {
             admin.setLastLogin(LocalDateTime.now());
         }
         if (admin.getMobileNumber() == null || admin.getMobileNumber().isBlank()) {
-            admin.setMobileNumber("9000000001");
+            admin.setMobileNumber(findAvailableMobileNumber("9000000001"));
         }
         userRepository.save(admin);
 
@@ -57,7 +66,7 @@ public class DataInitializer implements CommandLineRunner {
             testUser.setLastLogin(LocalDateTime.now());
         }
         if (testUser.getMobileNumber() == null || testUser.getMobileNumber().isBlank()) {
-            testUser.setMobileNumber("9000000002");
+            testUser.setMobileNumber(findAvailableMobileNumber("9000000002"));
         }
         userRepository.save(testUser);
 
@@ -417,6 +426,22 @@ public class DataInitializer implements CommandLineRunner {
 
             System.out.println("Sample problems created");
         }
+    }
+
+    private String findAvailableMobileNumber(String preferredMobileNumber) {
+        if (!userRepository.existsByMobileNumber(preferredMobileNumber)) {
+            return preferredMobileNumber;
+        }
+
+        long base = Long.parseLong(preferredMobileNumber);
+        for (int offset = 1; offset <= 10000; offset++) {
+            String candidate = String.valueOf(base + offset);
+            if (!userRepository.existsByMobileNumber(candidate)) {
+                return candidate;
+            }
+        }
+
+        throw new IllegalStateException("Unable to generate a unique seed mobile number");
     }
 
     private Problem createProblem(String title, String description, Problem.Difficulty difficulty, 
